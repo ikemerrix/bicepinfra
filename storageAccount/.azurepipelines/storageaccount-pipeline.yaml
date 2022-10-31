@@ -1,0 +1,25 @@
+trigger: none
+
+variables:
+    vmImageName: 'terraform'
+    azureServiceConnection: 'My-Subscription-service-connection'
+    resourceGroupName: 'My-devops-bicep-dev'
+    location: 'West US'
+    templateFile: 'storageAccount/dev/main.bicep'
+    parameterfile: 'storageAccount/dev/parameters.json'
+    pool: $(vmImageName)
+stages:
+    - stage: dev
+      jobs:
+          - job: deployDev
+            continueOnError: false
+            steps:
+                - task: AzureCLI@2
+                  inputs:
+                    azureSubscription: 'My-Subscription-service-connection'
+                    scriptType: bash
+                    scriptLocation: inlineScript
+                    inlineScript: |
+                        az --version
+                        az group create --name $(resourceGroupName) --location $(location)
+                        az deployment group create --resource-group $(resourceGroupName) --template-file $(templateFile) --parameters $(parameterfile)
